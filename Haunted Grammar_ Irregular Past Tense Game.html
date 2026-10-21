@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haunted Grammar · Irregular Past Tense</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root { --orange:#ff7a1a; --purple:#9d4edd; --ghost:#7CFFB2; --bg:#07020f; }
+  html,body { min-height:100%; }
+  body {
+    background: radial-gradient(ellipse at top, #22103f 0%, #0b0320 55%, #05010b 100%);
+    color:#f3e8ff; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow-x:hidden;
+  }
+  .neon-orange { color:var(--orange); text-shadow:0 0 6px #ff7a1a, 0 0 18px #ff7a1a; }
+  .neon-purple { color:#c084fc; text-shadow:0 0 6px #a855f7, 0 0 18px #a855f7; }
+  .neon-green  { color:var(--ghost); text-shadow:0 0 6px #4ade80, 0 0 16px #4ade80; }
+
+  .card {
+    background: rgba(18,6,34,.82);
+    border:2px solid #7e22ce;
+    box-shadow: 0 0 22px rgba(157,78,221,.45), inset 0 0 30px rgba(157,78,221,.08);
+    border-radius:1.25rem;
+    backdrop-filter: blur(4px);
+  }
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+    padding:.8rem 1.4rem; border-radius:9999px; font-weight:800; letter-spacing:.02em;
+    background: linear-gradient(135deg,#ff7a1a,#c2410c);
+    color:#fff; box-shadow:0 0 14px rgba(255,122,26,.7);
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    cursor:pointer; border:none;
+  }
+  .btn:hover:not(:disabled){ transform:translateY(-2px) scale(1.03); box-shadow:0 0 24px rgba(255,122,26,.95); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; filter:grayscale(.6); }
+  .btn-purple { background:linear-gradient(135deg,#a855f7,#6d28d9); box-shadow:0 0 14px rgba(168,85,247,.7); }
+  .btn-green  { background:linear-gradient(135deg,#4ade80,#15803d); color:#052e16; box-shadow:0 0 14px rgba(74,222,128,.7); }
+
+  .input {
+    width:100%; background:rgba(5,1,11,.85); border:2px solid #581c87; border-radius:.9rem;
+    padding:.75rem 1rem; color:#fff; outline:none; transition:border-color .2s, box-shadow .2s;
+    text-transform:none;
+  }
+  .input:focus { border-color:var(--orange); box-shadow:0 0 12px rgba(255,122,26,.6); }
+
+  .tile {
+    display:flex; align-items:center; justify-content:center; gap:.5rem;
+    min-height:64px; padding:.75rem; border-radius:1rem; width:100%;
+    background:rgba(40,12,70,.85); border:2px solid #6b21a8; font-weight:800; font-size:1.05rem;
+    cursor:pointer; transition: transform .15s, box-shadow .2s, border-color .2s, background .2s;
+  }
+  .tile:hover:not(:disabled){ transform:translateY(-2px); border-color:#c084fc; box-shadow:0 0 14px rgba(192,132,252,.6); }
+  .tile-sel { border-color:var(--orange) !important; box-shadow:0 0 18px rgba(255,122,26,.9) !important; background:rgba(120,40,10,.6); }
+  .tile-done { border-color:var(--ghost) !important; background:rgba(20,80,50,.6); color:var(--ghost); box-shadow:0 0 14px rgba(124,255,178,.6); cursor:default; }
+  .tile-wrong { border-color:#f43f5e !important; box-shadow:0 0 16px rgba(244,63,94,.9) !important; }
+  .tile-right { border-color:var(--ghost) !important; box-shadow:0 0 16px rgba(124,255,178,.9) !important; background:rgba(20,80,50,.7); }
+  .tile:disabled { cursor:default; }
+
+  .shake { animation: shake .45s; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)}
+    60%{transform:translateX(-6px)} 80%{transform:translateX(6px)}
+  }
+  @keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+  @keyframes drift { 0%{transform:translate(0,0) rotate(0)} 50%{transform:translate(30px,-20px) rotate(8deg)} 100%{transform:translate(0,0) rotate(0)} }
+  @keyframes flicker { 0%,100%{opacity:1} 45%{opacity:.7} 50%{opacity:1} 55%{opacity:.85} }
+  @keyframes pop { 0%{opacity:0; transform:translateY(0) scale(.6)} 20%{opacity:1; transform:translateY(-10px) scale(1.15)} 100%{opacity:0; transform:translateY(-70px) scale(1)} }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none} }
+  @keyframes bob { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-8px) rotate(3deg)} }
+  @keyframes ghostFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  @keyframes glowPulse { 0%,100%{filter:drop-shadow(0 0 6px #ff7a1a)} 50%{filter:drop-shadow(0 0 18px #ff7a1a)} }
+
+  .float { animation: floatY 3.5s ease-in-out infinite; }
+  .flicker { animation: flicker 2.5s infinite; }
+  .bob { animation: bob 3s ease-in-out infinite; }
+  .fade-in { animation: fadeIn .5s ease-out both; }
+  .pumpkin-glow { animation: glowPulse 2.8s ease-in-out infinite; }
+
+  .bg-deco { position:fixed; pointer-events:none; user-select:none; opacity:.22; z-index:0; animation: drift 14s ease-in-out infinite; }
+  .float-pt {
+    position:fixed; z-index:60; pointer-events:none; font-weight:900; font-size:1.6rem;
+    color:var(--ghost); text-shadow:0 0 10px #4ade80; animation: pop 1.2s ease-out forwards;
+  }
+  .toast {
+    position:fixed; left:50%; bottom:5.5rem; transform:translateX(-50%); z-index:70;
+    padding:.7rem 1.2rem; border-radius:9999px; font-weight:700; text-align:center;
+    background:rgba(10,3,20,.95); border:2px solid var(--orange); box-shadow:0 0 18px rgba(255,122,26,.7);
+    max-width:90vw; animation: fadeIn .3s ease-out both;
+  }
+  .tombstone {
+    position:relative; background:linear-gradient(#4b4b5a,#2a2a35); border-radius:50px 50px 6px 6px;
+    border:2px solid #111; box-shadow: inset 0 -6px 10px rgba(0,0,0,.5), 0 0 12px rgba(0,0,0,.6);
+  }
+  .progress-track { background:rgba(40,12,70,.8); border-radius:9999px; overflow:hidden; height:12px; border:1px solid #6b21a8; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,#ff7a1a,#a855f7,#4ade80); transition: width .6s ease; box-shadow:0 0 12px rgba(168,85,247,.8); }
+  .stat { background:rgba(10,3,20,.7); border:1px solid #6b21a8; border-radius:1rem; padding:.5rem .9rem; }
+  .blank { display:inline-block; min-width:90px; border-bottom:3px dashed var(--orange); color:var(--orange); text-shadow:0 0 8px #ff7a1a; font-weight:900; text-align:center; padding:0 .4rem; }
+  .blank-ok { color:var(--ghost); border-color:var(--ghost); text-shadow:0 0 8px #4ade80; }
+  .blank-bad { color:#fb7185; border-color:#fb7185; text-shadow:0 0 8px #f43f5e; }
+  ::selection { background:var(--orange); color:#000; }
+</style>
+</head>
+<body class="min-h-screen relative">
+
+<!-- Decorative background -->
+<div id="deco" aria-hidden="true"></div>
+
+<div class="relative z-10 min-h-screen flex flex-col">
+  <main id="app" class="flex-1 flex items-center justify-center p-4 sm:p-6 pb-28"></main>
+</div>
+
+<!-- Tombstone footer -->
+<div class="fixed bottom-0 left-0 right-0 z-0 pointer-events-none flex justify-around items-end opacity-70 px-2" aria-hidden="true">
+  <div class="tombstone w-12 h-10 sm:w-16 sm:h-14 flex items-center justify-center text-[10px] text-gray-400 font-bold">R.I.P.</div>
+  <div class="tombstone w-16 h-12 sm:w-24 sm:h-20 flex items-center justify-center text-xs text-gray-400 font-bold">Here lies<br>the Verb</div>
+  <div class="tombstone w-10 h-8 sm:w-14 sm:h-12"></div>
+  <div class="tombstone w-14 h-16 sm:w-20 sm:h-24 flex items-center justify-center text-xs text-gray-400 font-bold">Went<br>Away</div>
+  <div class="tombstone w-12 h-10 sm:w-16 sm:h-14"></div>
+</div>
+
+<script>
+/* ==========================================================
+   CONFIG & DATA
+   ========================================================== */
+const ROOM_CODE = "SPOOKY2026";
+const GAME_NAMES = ["", "Ghost Match", "Witch's Potion", "Haunted Escape"];
+const MAX_SCORE = 320; // Ghost 80 + Potion 90 + Escape 150
+
+const PAIRS = [
+  ["go","went"], ["eat","ate"], ["write","wrote"],
+  ["see","saw"], ["take","took"], ["run","ran"]
+];
+
+const SPELLS = [
+  { s:"The witch ___ a magic circle on the dusty floor.",       a:"drew", w:["draw","drawn","drawing"] },
+  { s:"Three bats ___ out of the old church tower.",            a:"flew", w:["fly","flown","flies"] },
+  { s:"A black cat ___ the spell book off the shelf.",          a:"took", w:["take","taken","takes"] },
+  { s:"The skeleton ___ a spooky song in the graveyard.",       a:"sang", w:["sing","sung","sings"] },
+  { s:"The pumpkin ___ a secret to the little ghost.",          a:"told", w:["tell","telling","tells"] },
+  { s:"Grandpa Ghost ___ all the candy in one night!",          a:"ate",  w:["eat","eaten","eating"] }
+];
+
+const ESCAPE_Q = [
+  { o:["They ate pumpkin pie.",          "They eated pumpkin pie.",       "They eat pumpkin pie yesterday."], c:0 },
+  { o:["The vampire drank blood.",       "The vampire drinked blood.",    "The vampire drunk blood."],        c:0 },
+  { o:["We seed a bat.",                 "We sawed a bat.",               "We saw a bat."],                   c:2 },
+  { o:["The monster runned away.",       "The monster ran away.",         "The monster run away."],           c:1 },
+  { o:["I writed a spooky story.",       "I written a spooky story.",     "I wrote a spooky story."],         c:2 },
+  { o:["The ghost sung a song.",         "The ghost sang a song.",        "The ghost sings a song."],         c:1 }
+];
+
+/* ==========================================================
+   STATE & HELPERS
+   ========================================================== */
+const state = { user:"", score:0, level:0, g1:null, g2:null, g3:null };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function shuffle(arr){
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function addScore(n, sourceEl){
+  state.score += n;
+  renderHud();
+  const pt = document.createElement("div");
+  pt.className = "float-pt";
+  pt.textContent = "+" + n;
+  const r = sourceEl ? sourceEl.getBoundingClientRect() : { left: innerWidth/2, top: innerHeight/2, width:0 };
+  pt.style.left = Math.min(innerWidth - 80, Math.max(10, r.left + (r.width || 0) / 2 - 20)) + "px";
+  pt.style.top = Math.max(10, r.top - 10) + "px";
+  document.body.appendChild(pt);
+  setTimeout(() => pt.remove(), 1300);
+}
+
+function toast(msg){
+  const old = document.querySelector(".toast");
+  if (old) old.remove();
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1600);
+}
+
+function shakeEl(id){
+  const el = $(id);
+  if (!el) return;
+  el.classList.remove("shake");
+  void el.offsetWidth;
+  el.classList.add("shake");
+}
+
+/* ==========================================================
+   BACKGROUND DECORATIONS
+   ========================================================== */
+function buildDeco(){
+  const items = ["🦇","👻","🎃","🦇","🕸️","👻","🦇","🎃","🕷️","🦇","👻","🪄"];
+  const wrap = $("deco");
+  items.forEach((emo, i) => {
+    const s = document.createElement("span");
+    s.className = "bg-deco";
+    s.textContent = emo;
+    s.style.left = (Math.random() * 95) + "vw";
+    s.style.top  = (Math.random() * 90) + "vh";
+    s.style.fontSize = (1.4 + Math.random() * 2.2) + "rem";
+    s.style.animationDuration = (10 + Math.random() * 10) + "s";
+    s.style.animationDelay = (-Math.random() * 10) + "s";
+    wrap.appendChild(s);
+  });
+}
+
+/* ==========================================================
+   ENTRY SCREEN
+   ========================================================== */
+function showEntry(){
+  $("app").innerHTML = `
+    <section class="card fade-in w-full max-w-md p-6 sm:p-8 relative">
+      <div class="text-center mb-6">
+        <div class="text-6xl sm:text-7xl float pumpkin-glow inline-block">🎃</div>
+        <h1 class="neon-orange text-3xl sm:text-4xl font-black mt-3 flicker">Haunted Grammar</h1>
+        <p class="neon-purple text-sm sm:text-base mt-2 font-semibold">Irregular Past Tense Adventure</p>
+        <p class="text-purple-200/80 text-sm mt-2">Enter the room code and your name to step inside the haunted house.</p>
+      </div>
+
+      <form id="entryForm" onsubmit="enterHouse(event)" class="space-y-4" novalidate>
+        <div>
+          <label for="code" class="block text-sm font-bold neon-green mb-1">🔑 Room Access Code</label>
+          <input id="code" class="input uppercase" placeholder="e.g. SPOOKY2026" autocomplete="off" maxlength="20">
+        </div>
+        <div>
+          <label for="username" class="block text-sm font-bold neon-green mb-1">👻 Student Username</label>
+          <input id="username" class="input" placeholder="Your spooky name" autocomplete="off" maxlength="20">
+        </div>
+        <p id="entryError" class="hidden text-rose-400 font-bold text-sm text-center"></p>
+        <button type="submit" class="btn w-full text-lg mt-2">Enter the Haunted House 🦇</button>
+      </form>
+
+      <div class="flex justify-center gap-4 mt-6 text-3xl opacity-80">
+        <span class="bob">🦇</span><span class="float">👻</span><span class="bob" style="animation-delay:.6s">🧪</span>
+      </div>
+    </section>`;
+}
+
+function enterHouse(e){
+  if (e) e.preventDefault();
+  const code = $("code").value.trim().toUpperCase();
+  const name = $("username").value.trim();
+  const err = $("entryError");
+  let msg = "";
+  if (code !== ROOM_CODE) msg = "🕸️ That room code is wrong. Check with your teacher!";
+  else if (name.length < 2) msg = "👻 Please enter a username (at least 2 characters).";
+
+  if (msg) {
+    err.textContent = msg;
+    err.classList.remove("hidden");
+    err.classList.add("shake");
+    setTimeout(() => err.classList.remove("shake"), 500);
+    return;
+  }
+  state.user = name;
+  state.score = 0;
+  startGame(1);
+}
+
+/* ==========================================================
+   GAME SHELL (HUD + STAGE)
+   ========================================================== */
+function showGameShell(){
+  $("app").innerHTML = `
+    <div class="w-full max-w-3xl space-y-4">
+      <header id="hud"></header>
+      <section id="stage" class="fade-in"></section>
+    </div>`;
+  renderHud();
+}
+
+function renderHud(){
+  const hud = $("hud");
+  if (!hud) return;
+  const lvl = Math.min(state.level, 3);
+  const pct = state.level >= 4 ? 100 : ((state.level - 1) / 3) * 100;
+  hud.innerHTML = `
+    <div class="card p-4 sm:p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl bob">🧙</span>
+          <div>
+            <p class="text-xs uppercase tracking-widest text-purple-300">Student</p>
+            <p class="neon-orange font-black text-lg sm:text-xl">${esc(state.user)}</p>
+          </div>
+        </div>
+        <div class="flex gap-2 sm:gap-3">
+          <div class="stat text-center">
+            <p class="text-[10px] uppercase tracking-widest text-purple-300">Score</p>
+            <p class="neon-green font-black text-lg sm:text-xl">🎃 ${state.score}</p>
+          </div>
+          <div class="stat text-center">
+            <p class="text-[10px] uppercase tracking-widest text-purple-300">Level</p>
+            <p class="neon-purple font-black text-lg sm:text-xl">${state.level >= 4 ? "Final" : lvl + " / 3"}</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3">
+        <div class="flex justify-between text-xs text-purple-200 mb-1">
+          <span>${state.level >= 4 ? "All spells cast!" : "Now: " + esc(GAME_NAMES[state.level])}</span>
+          <span>${Math.round(pct)}%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+}
+
+function renderStage(){
+  const stage = $("stage");
+  if (!stage) return;
+  if (state.level === 1) stage.innerHTML = renderG1();
+  else if (state.level === 2) stage.innerHTML = renderG2();
+  else if (state.level === 3) stage.innerHTML = renderG3();
+  else stage.innerHTML = renderEnd();
+}
+
+function startGame(n){
+  state.level = n;
+  if (n === 1) state.g1 = { bases: shuffle([0,1,2,3,4,5]), pasts: shuffle([0,1,2,3,4,5]), sel: null, matched: [], done:false };
+  if (n === 2) state.g2 = { i: 0, sel: null, answered: false, correct: 0, opts: SPELLS.map(s => shuffle([s.a, ...s.w])) };
+  if (n === 3) state.g3 = { i: 0, lives: 3, pos: 0, sel: null, answered: false, order: shuffle(ESCAPE_Q.map((_, k) => k)) };
+  if (!$("hud")) showGameShell();
+  renderHud();
+  renderStage();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function nextLevel(){
+  if (state.level >= 3) { state.level = 4; renderHud(); renderStage(); return; }
+  startGame(state.level + 1);
+}
+
+/* ==========================================================
+   GAME 1 — GHOST MATCH
+   ========================================================== */
+function renderG1(){
+  const g = state.g1;
+  const total = PAIRS.length;
+  const allDone = g.matched.length === total;
+
+  const bases = g.bases.map(k => {
+    const done = g.matched.includes(k);
+    const sel = g.sel === k;
+    const cls = done ? "tile-done" : (sel ? "tile-sel" : "");
+    return `<button id="base-${k}" ${done ? "disabled" : ""} onclick="pickBase(${k})" class="tile ${cls}">
+              <span class="text-2xl">${done ? "✅" : "🧪"}</span>
+              <span class="text-lg sm:text-xl">${PAIRS[k][0]}</span>
+            </button>`;
+  }).join("");
+
+  const pasts = g.pasts.map(k => {
+    const done = g.matched.includes(k);
+    const cls = done ? "tile-done" : "";
+    return `<button id="past-${k}" ${done ? "disabled" : ""} onclick="pickPast(${k})" class="tile ${cls}">
+              <span class="text-2xl ${done ? "" : "float"}">${done ? "✅" : "👻"}</span>
+              <span class="text-lg sm:text-xl">${PAIRS[k][1]}</span>
+            </button>`;
+  }).join("");
+
+  return `
+    <div class="card p-5 sm:p-7">
+      <div class="text-center mb-5">
+        <h2 class="neon-orange text-2xl sm:text-3xl font-black">👻 Game 1: Ghost Match</h2>
+        <p class="text-purple-200 text-sm sm:text-base mt-2">
+          Tap a <span class="neon-green font-bold">base verb potion 🧪</span>, then tap its
+          <span class="neon-purple font-bold">ghost past form 👻</span>. Each correct match adds +10 points!
+        </p>
+        <p class="text-xs text-purple-300 mt-1">Matched: ${g.matched.length} / ${total}</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 sm:gap-6">
+        <div>
+          <p class="text-center text-xs uppercase tracking-widest neon-green mb-2">Base Form</p>
+          <div class="grid gap-2 sm:gap-3">${bases}</div>
+        </div>
+        <div>
+          <p class="text-center text-xs uppercase tracking-widest neon-purple mb-2">Past Form</p>
+          <div class="grid gap-2 sm:gap-3">${pasts}</div>
+        </div>
+      </div>
+
+      ${allDone ? `
+        <div class="mt-6 text-center fade-in">
+          <p class="neon-green font-black text-xl">🎉 All ghosts are freed! Bonus +20 points!</p>
+          <button class="btn btn-green mt-4" onclick="nextLevel()">Next: Witch's Potion 🧙‍♀️ →</button>
+        </div>` : ""}
+    </div>`;
+}
+
+function pickBase(k){
+  const g = state.g1;
+  if (g.matched.includes(k)) return;
+  g.sel = (g.sel === k) ? null : k;
+  renderStage();
+}
+
+function pickPast(k){
+  const g = state.g1;
+  if (g.matched.includes(k)) return;
+  if (g.sel === null) { toast("🧪 First choose a base verb potion!"); shakeEl("past-"+k); return; }
+
+  if (g.sel === k) {
+    g.matched.push(k);
+    g.sel = null;
+    addScore(10, $("past-"+k));
+    renderStage();
+    if (g.matched.length === PAIRS.length) {
+      setTimeout(() => { addScore(20, $("stage")); }, 300);
+    }
+  } else {
+    shakeEl("past-"+k);
+    shakeEl("base-"+g.sel);
+    toast("👻 Not quite! Try another ghost.");
+  }
+}
+
+/* ==========================================================
+   GAME 2 — WITCH'S POTION
+   ========================================================== */
+function renderG2(){
+  const g = state.g2;
+  const spell = SPELLS[g.i];
+  const opts = g.opts[g.i];
+  const sentence = spell.s.replace("___",
+    `<span id="blank" class="blank ${g.answered ? (g.sel === spell.a ? "blank-ok" : "blank-bad") : ""}">${g.answered ? esc(g.sel === spell.a ? spell.a : spell.a) : (g.sel ? esc(g.sel) : "?")}</span>`);
+
+  const optionBtns = opts.map((o, j) => {
+    let cls = "";
+    if (g.answered) {
+      if (o === spell.a) cls = "tile-right";
+      else if (o === g.sel) cls = "tile-wrong";
+    } else if (g.sel === o) cls = "tile-sel";
+    return `<button ${g.answered ? "disabled" : ""} onclick="pickOpt('${esc(o)}')" class="tile ${cls}">
+              <span class="text-xl">🔮</span><span>${esc(o)}</span>
+            </button>`;
+  }).join("");
+
+  let feedback = "";
+  if (g.answered) {
+    const ok = g.sel === spell.a;
+    feedback = `<div class="mt-5 text-center fade-in">
+        <p class="${ok ? "neon-green" : "text-rose-400"} font-black text-lg">
+          ${ok ? "✨ The spell worked! +15 points" : "💀 The spell fizzled! Correct: " + esc(spell.a)}
+        </p>
+        <button class="btn btn-purple mt-4" onclick="nextSpell()">
+          ${g.i + 1 < SPELLS.length ? "Next Spell →" : "Finish Potion ⚗️ →"}
+        </button>
+      </div>`;
+  }
+
+  return `
+    <div class="card p-5 sm:p-7">
+      <div class="text-center mb-5">
+        <h2 class="neon-purple text-2xl sm:text-3xl font-black">🧙‍♀️ Game 2: Witch's Potion</h2>
+        <p class="text-purple-200 text-sm sm:text-base mt-2">Choose the correct <span class="neon-orange font-bold">irregular past verb</span> to complete the magic spell. Correct = +15 points!</p>
+        <p class="text-xs text-purple-300 mt-1">Spell ${g.i + 1} of ${SPELLS.length} · Correct so far: ${g.correct}</p>
+      </div>
+
+      <div class="rounded-2xl border border-purple-800 bg-black/40 p-4 sm:p-6 text-center">
+        <div class="text-4xl mb-3 float">🫖</div>
+        <p id="spellText" class="text-lg sm:text-2xl font-bold leading-relaxed">${sentence}</p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6" id="optionsWrap">${optionBtns}</div>
+
+      ${!g.answered ? `
+        <div class="text-center mt-6">
+          <button id="castBtn" class="btn" ${g.sel ? "" : "disabled"} onclick="castSpell()">Cast the Spell 🔮</button>
+        </div>` : feedback}
+    </div>`;
+}
+
+function pickOpt(o){
+  const g = state.g2;
+  if (g.answered) return;
+  g.sel = o;
+  renderStage();
+}
+
+function castSpell(){
+  const g = state.g2;
+  if (g.answered || !g.sel) return;
+  const spell = SPELLS[g.i];
+  g.answered = true;
+  if (g.sel === spell.a) {
+    g.correct++;
+    addScore(15, $("spellText"));
+  } else {
+    shakeEl("spellText");
+  }
+  renderStage();
+}
+
+function nextSpell(){
+  const g = state.g2;
+  g.i++;
+  g.sel = null;
+  g.answered = false;
+  if (g.i >= SPELLS.length) { nextLevel(); return; }
+  renderStage();
+}
+
+/* ==========================================================
+   GAME 3 — HAUNTED ESCAPE
+   ========================================================== */
+function renderG3(){
+  const g = state.g3;
+  const q = ESCAPE_Q[g.order[g.i]];
+  const over = g.lives <= 0;
+  const hearts = "❤️".repeat(g.lives) + "🖤".repeat(3 - g.lives);
+
+  // escape track: 6 steps
+  const steps = [];
+  for (let s = 0; s < ESCAPE_Q.length; s++) {
+    let content = "🌑";
+    if (s === g.pos) content = "🧙";
+    else if (s === g.pos + 1 && g.answered && g.lastWrong) content = "👹";
+    steps.push(`<div class="text-xl sm:text-2xl ${s === g.pos ? "bob" : ""}">${content}</div>`);
+  }
+
+  const opts = q.o.map((txt, j) => {
+    let cls = "";
+    if (g.answered) {
+      if (j === q.c) cls = "tile-right";
+      else if (j === g.sel) cls = "tile-wrong";
+    } else if (g.sel === j) cls = "tile-sel";
+    return `<button id="esc-${j}" ${g.answered || over ? "disabled" : ""} onclick="pickEscape(${j})" class="tile ${cls} text-left justify-start text-sm sm:text-base">
+              <span class="text-xl">${["🦇","🕷️","🦴"][j]}</span><span>${esc(txt)}</span>
+            </button>`;
+  }).join("");
+
+  let footer = "";
+  if (over) {
+    footer = `<div class="mt-5 text-center fade-in">
+        <p class="text-rose-400 font-black text-lg">💀 The monsters caught you! The escape failed.</p>
+        <button class="btn btn-purple mt-4" onclick="finishEscape()">See Final Results 🕸️</button>
+      </div>`;
+  } else if (g.answered) {
+    const ok = g.sel === q.c;
+    footer = `<div class="mt-5 text-center fade-in">
+        <p class="${ok ? "neon-green" : "text-rose-400"} font-black text-lg">
+          ${ok ? "🏃 You dodged the monster! +20 points" : "👹 A monster bit you! −1 heart. Correct: " + esc(q.o[q.c])}
+        </p>
+        <button class="btn btn-purple mt-4" onclick="nextEscape()">
+          ${(g.i + 1 < ESCAPE_Q.length && g.lives > 0) ? "Keep Running →" : "Finish Escape 🏁"}
+        </button>
+      </div>`;
+  }
+
+  return `
+    <div class="card p-5 sm:p-7">
+      <div class="text-center mb-4">
+        <h2 class="neon-green text-2xl sm:text-3xl font-black">🏚️ Game 3: Haunted Escape</h2>
+        <p class="text-purple-200 text-sm sm:text-base mt-2">Pick the sentence with the <span class="neon-orange font-bold">correct past tense</span> to outrun the monsters. Correct = +20 points!</p>
+        <div class="flex justify-center items-center gap-6 mt-3">
+          <span class="text-lg">Lives: <span id="lives">${hearts}</span></span>
+          <span class="text-sm text-purple-300">Question ${Math.min(g.i + 1, ESCAPE_Q.length)} / ${ESCAPE_Q.length}</span>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-purple-800 bg-black/40 p-3 sm:p-4 mb-5">
+        <div class="flex justify-between items-end px-1">
+          <div class="text-xl sm:text-2xl">🪦</div>
+          ${steps.join("")}
+          <div class="text-xl sm:text-2xl">🏚️</div>
+        </div>
+        <div class="progress-track mt-3"><div class="progress-fill" style="width:${(g.pos / ESCAPE_Q.length) * 100}%"></div></div>
+        <p class="text-center text-xs text-purple-300 mt-2">Escape progress: ${g.pos} / ${ESCAPE_Q.length}</p>
+      </div>
+
+      <div id="escapeOpts" class="grid gap-3 ${g.i % 2 ? "" : ""}">${opts}</div>
+
+      ${footer}
+    </div>`;
+}
+
+function pickEscape(j){
+  const g = state.g3;
+  if (g.answered || g.lives <= 0) return;
+  g.sel = j;
+  const q = ESCAPE_Q[g.order[g.i]];
+  g.answered = true;
+  if (j === q.c) {
+    g.pos++;
+    g.lastWrong = false;
+    addScore(20, $("esc-"+j));
+  } else {
+    g.lives--;
+    g.lastWrong = true;
+    shakeEl("esc-"+j);
+  }
+  renderStage();
+  if (j !== q.c) shakeEl("lives");
+}
+
+function nextEscape(){
+  const g = state.g3;
+  g.i++;
+  g.sel = null;
+  g.answered = false;
+  g.lastWrong = false;
+  if (g.i >= ESCAPE_Q.length || g.lives <= 0) { finishEscape(); return; }
+  renderStage();
+}
+
+function finishEscape(){
+  if (state.g3.pos === ESCAPE_Q.length) {
+    addScore(30, $("stage"));
+    toast("🏃‍♂️ You escaped the Haunted House! +30 bonus!");
+  }
+  nextLevel();
+}
+
+/* ==========================================================
+   END SCREEN
+   ========================================================== */
+function getTitle(score){
+  if (score >= 260) return { t: "Master of the Haunted Grammar", e: "👑🎃👻", c: "neon-orange" };
+  if (score >= 170) return { t: "Spooky Grammar Scholar", e: "🦇🧙", c: "neon-purple" };
+  return { t: "Apprentice of the Dark Arts", e: "🕯️🪄", c: "neon-green" };
+}
+
+function renderEnd(){
+  const title = getTitle(state.score);
+  const pct = Math.min(100, Math.round((state.score / MAX_SCORE) * 100));
+  const stars = pct >= 85 ? 3 : pct >= 55 ? 2 : 1;
+  const starStr = "⭐".repeat(stars) + "☆".repeat(3 - stars);
+  return `
+    <div class="card p-6 sm:p-10 text-center relative overflow-hidden">
+      <div class="text-6xl sm:text-7xl float pumpkin-glow inline-block">🎃</div>
+      <p class="mt-4 text-sm uppercase tracking-widest text-purple-300">Haunted House Complete</p>
+      <h2 class="${title.c} text-3xl sm:text-4xl font-black mt-2 flicker">${title.t}</h2>
+      <p class="text-2xl mt-2">${title.e}</p>
+      <p class="text-lg mt-4">Well done, <span class="neon-orange font-black">${esc(state.user)}</span>!</p>
+
+      <div class="grid grid-cols-3 gap-3 mt-6 max-w-lg mx-auto">
+        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Ghost Match</p><p class="font-black neon-green">${state.g1 ? state.g1.matched.length * 10 + (state.g1.matched.length === PAIRS.length ? 20 : 0) : 0}</p></div>
+        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Witch's Potion</p><p class="font-black neon-purple">${state.g2 ? state.g2.correct * 15 : 0}</p></div>
+        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Haunted Escape</p><p class="font-black neon-orange">${state.g3 ? state.g3.pos * 20 : 0}</p></div>
+      </div>
+
+      <div class="mt-8">
+        <p class="text-sm text-purple-300 uppercase tracking-widest">Total Score</p>
+        <p class="neon-orange text-5xl sm:text-6xl font-black mt-1">🎃 ${state.score}</p>
+        <p class="text-purple-200 text-sm mt-1">out of ${MAX_SCORE} · ${pct}%</p>
+        <p class="text-3xl mt-3">${starStr}</p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+        <button class="btn btn-green" onclick="playAgain()">Haunt Again 🔁</button>
+        <button class="btn btn-purple" onclick="leaveHouse()">Leave the House 🚪</button>
+      </div>
+    </div>`;
+}
+
+function playAgain(){
+  state.score = 0;
+  startGame(1);
+}
+
+function leaveHouse(){
+  state.user = ""; state.score = 0; state.level = 0;
+  state.g1 = state.g2 = state.g3 = null;
+  showEntry();
+}
+
+/* ==========================================================
+   INIT
+   ========================================================== */
+buildDeco();
+showEntry();
+</script>
+</body>
+</html>
