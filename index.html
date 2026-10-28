@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Haunted Grammar · Irregular Past Tense</title>
+<title>Haunted Grammar · Irregular Past Tense & Negatives</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   :root { --orange:#ff7a1a; --purple:#9d4edd; --ghost:#7CFFB2; --bg:#07020f; }
@@ -40,14 +40,13 @@
   .input {
     width:100%; background:rgba(5,1,11,.85); border:2px solid #581c87; border-radius:.9rem;
     padding:.75rem 1rem; color:#fff; outline:none; transition:border-color .2s, box-shadow .2s;
-    text-transform:none;
   }
   .input:focus { border-color:var(--orange); box-shadow:0 0 12px rgba(255,122,26,.6); }
 
   .tile {
     display:flex; align-items:center; justify-content:center; gap:.5rem;
-    min-height:64px; padding:.75rem; border-radius:1rem; width:100%;
-    background:rgba(40,12,70,.85); border:2px solid #6b21a8; font-weight:800; font-size:1.05rem;
+    min-height:60px; padding:.7rem; border-radius:1rem; width:100%;
+    background:rgba(40,12,70,.85); border:2px solid #6b21a8; font-weight:800; font-size:1.02rem;
     cursor:pointer; transition: transform .15s, box-shadow .2s, border-color .2s, background .2s;
   }
   .tile:hover:not(:disabled){ transform:translateY(-2px); border-color:#c084fc; box-shadow:0 0 14px rgba(192,132,252,.6); }
@@ -68,7 +67,6 @@
   @keyframes pop { 0%{opacity:0; transform:translateY(0) scale(.6)} 20%{opacity:1; transform:translateY(-10px) scale(1.15)} 100%{opacity:0; transform:translateY(-70px) scale(1)} }
   @keyframes fadeIn { from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none} }
   @keyframes bob { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-8px) rotate(3deg)} }
-  @keyframes ghostFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
   @keyframes glowPulse { 0%,100%{filter:drop-shadow(0 0 6px #ff7a1a)} 50%{filter:drop-shadow(0 0 18px #ff7a1a)} }
 
   .float { animation: floatY 3.5s ease-in-out infinite; }
@@ -98,24 +96,23 @@
   .blank { display:inline-block; min-width:90px; border-bottom:3px dashed var(--orange); color:var(--orange); text-shadow:0 0 8px #ff7a1a; font-weight:900; text-align:center; padding:0 .4rem; }
   .blank-ok { color:var(--ghost); border-color:var(--ghost); text-shadow:0 0 8px #4ade80; }
   .blank-bad { color:#fb7185; border-color:#fb7185; text-shadow:0 0 8px #f43f5e; }
+  .rule { background:rgba(0,0,0,.35); border:1px dashed #7e22ce; border-radius:1rem; padding:.7rem 1rem; font-size:.9rem; }
   ::selection { background:var(--orange); color:#000; }
 </style>
 </head>
 <body class="min-h-screen relative">
 
-<!-- Decorative background -->
 <div id="deco" aria-hidden="true"></div>
 
 <div class="relative z-10 min-h-screen flex flex-col">
   <main id="app" class="flex-1 flex items-center justify-center p-4 sm:p-6 pb-28"></main>
 </div>
 
-<!-- Tombstone footer -->
 <div class="fixed bottom-0 left-0 right-0 z-0 pointer-events-none flex justify-around items-end opacity-70 px-2" aria-hidden="true">
   <div class="tombstone w-12 h-10 sm:w-16 sm:h-14 flex items-center justify-center text-[10px] text-gray-400 font-bold">R.I.P.</div>
   <div class="tombstone w-16 h-12 sm:w-24 sm:h-20 flex items-center justify-center text-xs text-gray-400 font-bold">Here lies<br>the Verb</div>
   <div class="tombstone w-10 h-8 sm:w-14 sm:h-12"></div>
-  <div class="tombstone w-14 h-16 sm:w-20 sm:h-24 flex items-center justify-center text-xs text-gray-400 font-bold">Went<br>Away</div>
+  <div class="tombstone w-14 h-16 sm:w-20 sm:h-24 flex items-center justify-center text-xs text-gray-400 font-bold">Didn't<br>Go Home</div>
   <div class="tombstone w-12 h-10 sm:w-16 sm:h-14"></div>
 </div>
 
@@ -124,36 +121,63 @@
    CONFIG & DATA
    ========================================================== */
 const ROOM_CODE = "SPOOKY2026";
-const GAME_NAMES = ["", "Ghost Match", "Witch's Potion", "Haunted Escape"];
-const MAX_SCORE = 320; // Ghost 80 + Potion 90 + Escape 150
+const GAME_NAMES = ["", "Ghost Match", "Witch's Potion", "Haunted Escape", "Crypt of Negatives"];
+const TOTAL_GAMES = 4;
+const MAX_SCORE = 650; // G1 120 + G2 150 + G3 230 + G4 150
 
+// Game 1: base -> past (irregular)
 const PAIRS = [
-  ["go","went"], ["eat","ate"], ["write","wrote"],
-  ["see","saw"], ["take","took"], ["run","ran"]
+  ["go","went"], ["eat","ate"], ["write","wrote"], ["see","saw"], ["take","took"],
+  ["run","ran"], ["drink","drank"], ["give","gave"], ["make","made"], ["bring","brought"]
 ];
 
+// Game 2: fill-in with irregular past
 const SPELLS = [
-  { s:"The witch ___ a magic circle on the dusty floor.",       a:"drew", w:["draw","drawn","drawing"] },
-  { s:"Three bats ___ out of the old church tower.",            a:"flew", w:["fly","flown","flies"] },
-  { s:"A black cat ___ the spell book off the shelf.",          a:"took", w:["take","taken","takes"] },
-  { s:"The skeleton ___ a spooky song in the graveyard.",       a:"sang", w:["sing","sung","sings"] },
-  { s:"The pumpkin ___ a secret to the little ghost.",          a:"told", w:["tell","telling","tells"] },
-  { s:"Grandpa Ghost ___ all the candy in one night!",          a:"ate",  w:["eat","eaten","eating"] }
+  { s:"The witch ___ a magic circle on the dusty floor.",       a:"drew",   w:["draw","drawn","drawing"] },
+  { s:"Three bats ___ out of the old church tower.",            a:"flew",   w:["fly","flown","flies"] },
+  { s:"A black cat ___ the spell book off the shelf.",          a:"took",   w:["take","taken","takes"] },
+  { s:"The skeleton ___ a spooky song in the graveyard.",       a:"sang",   w:["sing","sung","sings"] },
+  { s:"The pumpkin ___ a secret to the little ghost.",          a:"told",   w:["tell","telling","tells"] },
+  { s:"Grandpa Ghost ___ all the candy in one night!",          a:"ate",    w:["eat","eaten","eating"] },
+  { s:"The ghost ___ a cold wind across the room.",             a:"blew",   w:["blow","blown","blowing"] },
+  { s:"The cat ___ the mouse in the dark cellar.",              a:"caught", w:["catch","catching","catches"] },
+  { s:"The monster ___ the lantern in the hall.",               a:"broke",  w:["break","broken","breaking"] },
+  { s:"The vampire ___ a bottle of blood to the party.",        a:"brought",w:["bring","bringing","brings"] }
 ];
 
+// Game 3: multiple choice, affirmative + negative sentences
 const ESCAPE_Q = [
   { o:["They ate pumpkin pie.",          "They eated pumpkin pie.",       "They eat pumpkin pie yesterday."], c:0 },
   { o:["The vampire drank blood.",       "The vampire drinked blood.",    "The vampire drunk blood."],        c:0 },
   { o:["We seed a bat.",                 "We sawed a bat.",               "We saw a bat."],                   c:2 },
   { o:["The monster runned away.",       "The monster ran away.",         "The monster run away."],           c:1 },
   { o:["I writed a spooky story.",       "I written a spooky story.",     "I wrote a spooky story."],         c:2 },
-  { o:["The ghost sung a song.",         "The ghost sang a song.",        "The ghost sings a song."],         c:1 }
+  { o:["The ghost sung a song.",         "The ghost sang a song.",        "The ghost sings a song."],         c:1 },
+  { o:["I didn't saw the ghost.",        "I didn't see the ghost.",       "I not see the ghost."],            c:1 },
+  { o:["She didn't went home.",          "She didn't go home.",           "She not go home."],                c:1 },
+  { o:["The bats didn't flew away.",     "The bats didn't fly away.",     "The bats don't flew away."],       c:1 },
+  { o:["We didn't ate the candy.",       "We didn't eat the candy.",      "We not eat the candy."],           c:1 }
+];
+
+// Game 4: negative past simple (did not / didn't + base verb)
+const NEG_Q = [
+  { s:"Tom ___ the zombie movie last night. (see)",           o:["didn't see","didn't saw","not see","didn't seen"],       c:0 },
+  { s:"We ___ to the haunted park. (go)",                      o:["didn't went","didn't go","not went","didn't goes"],     c:1 },
+  { s:"The witch ___ the potion correctly. (make)",            o:["didn't made","didn't make","doesn't make","not made"],  c:1 },
+  { s:"They ___ any candy at the party. (eat)",                o:["didn't ate","didn't eat","not eat","didn't eats"],      c:1 },
+  { s:"I ___ my costume in time. (finish)",                    o:["didn't finished","didn't finish","not finish","didn't finishes"], c:1 },
+  { s:"The bats ___ in the attic all day. (sleep)",            o:["didn't slept","didn't sleep","not sleep","didn't sleeps"], c:1 },
+  { s:"She ___ the lost book in the cemetery. (find)",         o:["didn't found","didn't find","not find","didn't finds"], c:1 },
+  { s:"The monster ___ a scary song. (sing)",                  o:["didn't sang","didn't sing","not sing","didn't sings"],  c:1 },
+  { s:"You ___ the spell book from the shelf. (take)",         o:["didn't took","didn't take","not take","don't take"],    c:1 },
+  { s:"My brother ___ to the graveyard alone. (go)",           o:["didn't went","didn't go","not go","wasn't go"],         c:1 }
 ];
 
 /* ==========================================================
    STATE & HELPERS
    ========================================================== */
-const state = { user:"", score:0, level:0, g1:null, g2:null, g3:null };
+const emptyPts = () => ({ g1:0, g2:0, g3:0, g4:0 });
+const state = { user:"", score:0, pts:emptyPts(), level:0, g1:null, g2:null, g3:null, g4:null };
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -166,8 +190,9 @@ function shuffle(arr){
   return a;
 }
 
-function addScore(n, sourceEl){
+function addScore(n, sourceEl, key){
   state.score += n;
+  if (key) state.pts[key] += n;
   renderHud();
   const pt = document.createElement("div");
   pt.className = "float-pt";
@@ -198,12 +223,12 @@ function shakeEl(id){
 }
 
 /* ==========================================================
-   BACKGROUND DECORATIONS
+   BACKGROUND
    ========================================================== */
 function buildDeco(){
   const items = ["🦇","👻","🎃","🦇","🕸️","👻","🦇","🎃","🕷️","🦇","👻","🪄"];
   const wrap = $("deco");
-  items.forEach((emo, i) => {
+  items.forEach(emo => {
     const s = document.createElement("span");
     s.className = "bg-deco";
     s.textContent = emo;
@@ -217,7 +242,7 @@ function buildDeco(){
 }
 
 /* ==========================================================
-   ENTRY SCREEN
+   ENTRY
    ========================================================== */
 function showEntry(){
   $("app").innerHTML = `
@@ -225,7 +250,7 @@ function showEntry(){
       <div class="text-center mb-6">
         <div class="text-6xl sm:text-7xl float pumpkin-glow inline-block">🎃</div>
         <h1 class="neon-orange text-3xl sm:text-4xl font-black mt-3 flicker">Haunted Grammar</h1>
-        <p class="neon-purple text-sm sm:text-base mt-2 font-semibold">Irregular Past Tense Adventure</p>
+        <p class="neon-purple text-sm sm:text-base mt-2 font-semibold">Irregular Past & Negatives Adventure</p>
         <p class="text-purple-200/80 text-sm mt-2">Enter the room code and your name to step inside the haunted house.</p>
       </div>
 
@@ -266,11 +291,12 @@ function enterHouse(e){
   }
   state.user = name;
   state.score = 0;
+  state.pts = emptyPts();
   startGame(1);
 }
 
 /* ==========================================================
-   GAME SHELL (HUD + STAGE)
+   SHELL (HUD + STAGE)
    ========================================================== */
 function showGameShell(){
   $("app").innerHTML = `
@@ -284,8 +310,10 @@ function showGameShell(){
 function renderHud(){
   const hud = $("hud");
   if (!hud) return;
-  const lvl = Math.min(state.level, 3);
-  const pct = state.level >= 4 ? 100 : ((state.level - 1) / 3) * 100;
+  const done = state.level >= TOTAL_GAMES + 1;
+  const pct = done ? 100 : ((Math.max(state.level,1) - 1) / TOTAL_GAMES) * 100;
+  const label = done ? "Final" : Math.min(state.level, TOTAL_GAMES) + " / " + TOTAL_GAMES;
+  const now = done ? "All spells cast!" : "Now: " + esc(GAME_NAMES[Math.min(state.level, TOTAL_GAMES)]);
   hud.innerHTML = `
     <div class="card p-4 sm:p-5">
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -303,13 +331,13 @@ function renderHud(){
           </div>
           <div class="stat text-center">
             <p class="text-[10px] uppercase tracking-widest text-purple-300">Level</p>
-            <p class="neon-purple font-black text-lg sm:text-xl">${state.level >= 4 ? "Final" : lvl + " / 3"}</p>
+            <p class="neon-purple font-black text-lg sm:text-xl">${label}</p>
           </div>
         </div>
       </div>
       <div class="mt-3">
         <div class="flex justify-between text-xs text-purple-200 mb-1">
-          <span>${state.level >= 4 ? "All spells cast!" : "Now: " + esc(GAME_NAMES[state.level])}</span>
+          <span>${now}</span>
           <span>${Math.round(pct)}%</span>
         </div>
         <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
@@ -320,17 +348,16 @@ function renderHud(){
 function renderStage(){
   const stage = $("stage");
   if (!stage) return;
-  if (state.level === 1) stage.innerHTML = renderG1();
-  else if (state.level === 2) stage.innerHTML = renderG2();
-  else if (state.level === 3) stage.innerHTML = renderG3();
-  else stage.innerHTML = renderEnd();
+  const renders = { 1: renderG1, 2: renderG2, 3: renderG3, 4: renderG4 };
+  stage.innerHTML = (renders[state.level] || renderEnd)();
 }
 
 function startGame(n){
   state.level = n;
-  if (n === 1) state.g1 = { bases: shuffle([0,1,2,3,4,5]), pasts: shuffle([0,1,2,3,4,5]), sel: null, matched: [], done:false };
+  if (n === 1) state.g1 = { bases: shuffle(PAIRS.map((_, k) => k)), pasts: shuffle(PAIRS.map((_, k) => k)), sel: null, matched: [] };
   if (n === 2) state.g2 = { i: 0, sel: null, answered: false, correct: 0, opts: SPELLS.map(s => shuffle([s.a, ...s.w])) };
-  if (n === 3) state.g3 = { i: 0, lives: 3, pos: 0, sel: null, answered: false, order: shuffle(ESCAPE_Q.map((_, k) => k)) };
+  if (n === 3) state.g3 = { i: 0, lives: 3, pos: 0, sel: null, answered: false, lastWrong: false, order: shuffle(ESCAPE_Q.map((_, k) => k)) };
+  if (n === 4) state.g4 = { i: 0, sel: null, answered: false, correct: 0, order: shuffle(NEG_Q.map((_, k) => k)), opts: NEG_Q.map(q => shuffle(q.o.map((t, j) => ({ t, ok: j === q.c })))) };
   if (!$("hud")) showGameShell();
   renderHud();
   renderStage();
@@ -338,7 +365,7 @@ function startGame(n){
 }
 
 function nextLevel(){
-  if (state.level >= 3) { state.level = 4; renderHud(); renderStage(); return; }
+  if (state.level >= TOTAL_GAMES) { state.level = TOTAL_GAMES + 1; renderHud(); renderStage(); return; }
   startGame(state.level + 1);
 }
 
@@ -352,20 +379,18 @@ function renderG1(){
 
   const bases = g.bases.map(k => {
     const done = g.matched.includes(k);
-    const sel = g.sel === k;
-    const cls = done ? "tile-done" : (sel ? "tile-sel" : "");
+    const cls = done ? "tile-done" : (g.sel === k ? "tile-sel" : "");
     return `<button id="base-${k}" ${done ? "disabled" : ""} onclick="pickBase(${k})" class="tile ${cls}">
-              <span class="text-2xl">${done ? "✅" : "🧪"}</span>
-              <span class="text-lg sm:text-xl">${PAIRS[k][0]}</span>
+              <span class="text-xl">${done ? "✅" : "🧪"}</span>
+              <span>${PAIRS[k][0]}</span>
             </button>`;
   }).join("");
 
   const pasts = g.pasts.map(k => {
     const done = g.matched.includes(k);
-    const cls = done ? "tile-done" : "";
-    return `<button id="past-${k}" ${done ? "disabled" : ""} onclick="pickPast(${k})" class="tile ${cls}">
-              <span class="text-2xl ${done ? "" : "float"}">${done ? "✅" : "👻"}</span>
-              <span class="text-lg sm:text-xl">${PAIRS[k][1]}</span>
+    return `<button id="past-${k}" ${done ? "disabled" : ""} onclick="pickPast(${k})" class="tile ${done ? "tile-done" : ""}">
+              <span class="text-xl ${done ? "" : "float"}">${done ? "✅" : "👻"}</span>
+              <span>${PAIRS[k][1]}</span>
             </button>`;
   }).join("");
 
@@ -374,8 +399,8 @@ function renderG1(){
       <div class="text-center mb-5">
         <h2 class="neon-orange text-2xl sm:text-3xl font-black">👻 Game 1: Ghost Match</h2>
         <p class="text-purple-200 text-sm sm:text-base mt-2">
-          Tap a <span class="neon-green font-bold">base verb potion 🧪</span>, then tap its
-          <span class="neon-purple font-bold">ghost past form 👻</span>. Each correct match adds +10 points!
+          Tap a <span class="neon-green font-bold">base verb 🧪</span>, then its
+          <span class="neon-purple font-bold">ghost past form 👻</span>. Each match = +10 points!
         </p>
         <p class="text-xs text-purple-300 mt-1">Matched: ${g.matched.length} / ${total}</p>
       </div>
@@ -383,11 +408,11 @@ function renderG1(){
       <div class="grid grid-cols-2 gap-3 sm:gap-6">
         <div>
           <p class="text-center text-xs uppercase tracking-widest neon-green mb-2">Base Form</p>
-          <div class="grid gap-2 sm:gap-3">${bases}</div>
+          <div class="grid gap-2">${bases}</div>
         </div>
         <div>
           <p class="text-center text-xs uppercase tracking-widest neon-purple mb-2">Past Form</p>
-          <div class="grid gap-2 sm:gap-3">${pasts}</div>
+          <div class="grid gap-2">${pasts}</div>
         </div>
       </div>
 
@@ -414,10 +439,10 @@ function pickPast(k){
   if (g.sel === k) {
     g.matched.push(k);
     g.sel = null;
-    addScore(10, $("past-"+k));
+    addScore(10, $("past-"+k), "g1");
     renderStage();
     if (g.matched.length === PAIRS.length) {
-      setTimeout(() => { addScore(20, $("stage")); }, 300);
+      setTimeout(() => addScore(20, $("stage"), "g1"), 300);
     }
   } else {
     shakeEl("past-"+k);
@@ -433,8 +458,9 @@ function renderG2(){
   const g = state.g2;
   const spell = SPELLS[g.i];
   const opts = g.opts[g.i];
-  const sentence = spell.s.replace("___",
-    `<span id="blank" class="blank ${g.answered ? (g.sel === spell.a ? "blank-ok" : "blank-bad") : ""}">${g.answered ? esc(g.sel === spell.a ? spell.a : spell.a) : (g.sel ? esc(g.sel) : "?")}</span>`);
+  const shown = g.answered ? spell.a : (g.sel || "?");
+  const blankCls = g.answered ? (g.sel === spell.a ? "blank-ok" : "blank-bad") : "";
+  const sentence = spell.s.replace("___", `<span id="blank" class="blank ${blankCls}">${esc(shown)}</span>`);
 
   const optionBtns = opts.map((o, j) => {
     let cls = "";
@@ -442,7 +468,7 @@ function renderG2(){
       if (o === spell.a) cls = "tile-right";
       else if (o === g.sel) cls = "tile-wrong";
     } else if (g.sel === o) cls = "tile-sel";
-    return `<button ${g.answered ? "disabled" : ""} onclick="pickOpt('${esc(o)}')" class="tile ${cls}">
+    return `<button ${g.answered ? "disabled" : ""} onclick="pickOpt(${j})" class="tile ${cls}">
               <span class="text-xl">🔮</span><span>${esc(o)}</span>
             </button>`;
   }).join("");
@@ -464,7 +490,7 @@ function renderG2(){
     <div class="card p-5 sm:p-7">
       <div class="text-center mb-5">
         <h2 class="neon-purple text-2xl sm:text-3xl font-black">🧙‍♀️ Game 2: Witch's Potion</h2>
-        <p class="text-purple-200 text-sm sm:text-base mt-2">Choose the correct <span class="neon-orange font-bold">irregular past verb</span> to complete the magic spell. Correct = +15 points!</p>
+        <p class="text-purple-200 text-sm sm:text-base mt-2">Choose the correct <span class="neon-orange font-bold">irregular past verb</span> to complete the spell. Correct = +15 points!</p>
         <p class="text-xs text-purple-300 mt-1">Spell ${g.i + 1} of ${SPELLS.length} · Correct so far: ${g.correct}</p>
       </div>
 
@@ -473,19 +499,19 @@ function renderG2(){
         <p id="spellText" class="text-lg sm:text-2xl font-bold leading-relaxed">${sentence}</p>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6" id="optionsWrap">${optionBtns}</div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">${optionBtns}</div>
 
       ${!g.answered ? `
         <div class="text-center mt-6">
-          <button id="castBtn" class="btn" ${g.sel ? "" : "disabled"} onclick="castSpell()">Cast the Spell 🔮</button>
+          <button class="btn" ${g.sel ? "" : "disabled"} onclick="castSpell()">Cast the Spell 🔮</button>
         </div>` : feedback}
     </div>`;
 }
 
-function pickOpt(o){
+function pickOpt(j){
   const g = state.g2;
   if (g.answered) return;
-  g.sel = o;
+  g.sel = g.opts[g.i][j];
   renderStage();
 }
 
@@ -496,7 +522,7 @@ function castSpell(){
   g.answered = true;
   if (g.sel === spell.a) {
     g.correct++;
-    addScore(15, $("spellText"));
+    addScore(15, $("spellText"), "g2");
   } else {
     shakeEl("spellText");
   }
@@ -521,14 +547,12 @@ function renderG3(){
   const over = g.lives <= 0;
   const hearts = "❤️".repeat(g.lives) + "🖤".repeat(3 - g.lives);
 
-  // escape track: 6 steps
-  const steps = [];
-  for (let s = 0; s < ESCAPE_Q.length; s++) {
+  const steps = ESCAPE_Q.map((_, s) => {
     let content = "🌑";
     if (s === g.pos) content = "🧙";
-    else if (s === g.pos + 1 && g.answered && g.lastWrong) content = "👹";
-    steps.push(`<div class="text-xl sm:text-2xl ${s === g.pos ? "bob" : ""}">${content}</div>`);
-  }
+    else if (s < g.pos) content = "🟢";
+    return `<div class="text-base sm:text-xl ${s === g.pos ? "bob" : ""}">${content}</div>`;
+  }).join("");
 
   const opts = q.o.map((txt, j) => {
     let cls = "";
@@ -545,7 +569,7 @@ function renderG3(){
   if (over) {
     footer = `<div class="mt-5 text-center fade-in">
         <p class="text-rose-400 font-black text-lg">💀 The monsters caught you! The escape failed.</p>
-        <button class="btn btn-purple mt-4" onclick="finishEscape()">See Final Results 🕸️</button>
+        <button class="btn btn-purple mt-4" onclick="finishEscape()">Continue 🕸️</button>
       </div>`;
   } else if (g.answered) {
     const ok = g.sel === q.c;
@@ -563,7 +587,7 @@ function renderG3(){
     <div class="card p-5 sm:p-7">
       <div class="text-center mb-4">
         <h2 class="neon-green text-2xl sm:text-3xl font-black">🏚️ Game 3: Haunted Escape</h2>
-        <p class="text-purple-200 text-sm sm:text-base mt-2">Pick the sentence with the <span class="neon-orange font-bold">correct past tense</span> to outrun the monsters. Correct = +20 points!</p>
+        <p class="text-purple-200 text-sm sm:text-base mt-2">Pick the sentence with the <span class="neon-orange font-bold">correct past or negative past</span> to outrun the monsters. Correct = +20 points!</p>
         <div class="flex justify-center items-center gap-6 mt-3">
           <span class="text-lg">Lives: <span id="lives">${hearts}</span></span>
           <span class="text-sm text-purple-300">Question ${Math.min(g.i + 1, ESCAPE_Q.length)} / ${ESCAPE_Q.length}</span>
@@ -571,17 +595,14 @@ function renderG3(){
       </div>
 
       <div class="rounded-2xl border border-purple-800 bg-black/40 p-3 sm:p-4 mb-5">
-        <div class="flex justify-between items-end px-1">
-          <div class="text-xl sm:text-2xl">🪦</div>
-          ${steps.join("")}
-          <div class="text-xl sm:text-2xl">🏚️</div>
+        <div class="flex justify-between items-center gap-1 px-1 flex-wrap">
+          <span class="text-xl">🪦</span>${steps}<span class="text-xl">🏚️</span>
         </div>
         <div class="progress-track mt-3"><div class="progress-fill" style="width:${(g.pos / ESCAPE_Q.length) * 100}%"></div></div>
         <p class="text-center text-xs text-purple-300 mt-2">Escape progress: ${g.pos} / ${ESCAPE_Q.length}</p>
       </div>
 
-      <div id="escapeOpts" class="grid gap-3 ${g.i % 2 ? "" : ""}">${opts}</div>
-
+      <div class="grid gap-3">${opts}</div>
       ${footer}
     </div>`;
 }
@@ -595,14 +616,14 @@ function pickEscape(j){
   if (j === q.c) {
     g.pos++;
     g.lastWrong = false;
-    addScore(20, $("esc-"+j));
+    addScore(20, $("esc-"+j), "g3");
   } else {
     g.lives--;
     g.lastWrong = true;
     shakeEl("esc-"+j);
+    shakeEl("lives");
   }
   renderStage();
-  if (j !== q.c) shakeEl("lives");
 }
 
 function nextEscape(){
@@ -617,18 +638,115 @@ function nextEscape(){
 
 function finishEscape(){
   if (state.g3.pos === ESCAPE_Q.length) {
-    addScore(30, $("stage"));
-    toast("🏃‍♂️ You escaped the Haunted House! +30 bonus!");
+    addScore(30, $("stage"), "g3");
+    toast("🏃 You escaped the Haunted House! +30 bonus!");
   }
   nextLevel();
+}
+
+/* ==========================================================
+   GAME 4 — CRYPT OF NEGATIVES (did not / didn't + base verb)
+   ========================================================== */
+function renderG4(){
+  const g = state.g4;
+  const q = NEG_Q[g.order[g.i]];
+  const opts = g.opts[g.i];
+  const selIdx = g.sel;
+  const picked = selIdx !== null ? opts[selIdx] : null;
+  const shown = g.answered ? q.o[q.c] : (picked ? picked.t : "?");
+  const blankCls = g.answered ? (picked && picked.ok ? "blank-ok" : "blank-bad") : "";
+  const sentence = q.s.replace("___", `<span id="blank4" class="blank ${blankCls}">${esc(shown)}</span>`);
+
+  const optionBtns = opts.map((o, j) => {
+    let cls = "";
+    if (g.answered) {
+      if (o.ok) cls = "tile-right";
+      else if (j === selIdx) cls = "tile-wrong";
+    } else if (selIdx === j) cls = "tile-sel";
+    return `<button ${g.answered ? "disabled" : ""} onclick="pickNeg(${j})" class="tile ${cls}">
+              <span class="text-xl">⚰️</span><span>${esc(o.t)}</span>
+            </button>`;
+  }).join("");
+
+  let feedback = "";
+  if (g.answered) {
+    const ok = picked && picked.ok;
+    feedback = `<div class="mt-5 text-center fade-in">
+        <p class="${ok ? "neon-green" : "text-rose-400"} font-black text-lg">
+          ${ok ? "🪦 The crypt opens! +15 points" : "💀 Wrong! The correct form is: " + esc(q.o[q.c])}
+        </p>
+        <p class="text-purple-200 text-sm mt-1">Rule: <span class="neon-orange font-bold">didn't</span> + <span class="neon-green font-bold">base verb</span> (no -ed, no past form)</p>
+        <button class="btn btn-purple mt-4" onclick="nextNeg()">
+          ${g.i + 1 < NEG_Q.length ? "Next Tomb →" : "Leave the Crypt ⚰️ →"}
+        </button>
+      </div>`;
+  }
+
+  return `
+    <div class="card p-5 sm:p-7">
+      <div class="text-center mb-5">
+        <h2 class="neon-orange text-2xl sm:text-3xl font-black">⚰️ Game 4: Crypt of Negatives</h2>
+        <p class="text-purple-200 text-sm sm:text-base mt-2">Complete the sentence with the correct <span class="neon-purple font-bold">negative past form</span>. Correct = +15 points!</p>
+        <p class="text-xs text-purple-300 mt-1">Tomb ${g.i + 1} of ${NEG_Q.length} · Correct so far: ${g.correct}</p>
+      </div>
+
+      <div class="rule mb-5 text-center">
+        <strong class="neon-green">✚ Negative Past Rule:</strong>
+        <span class="text-purple-100">I / you / he / she / it / we / they</span>
+        <span class="neon-orange font-black">did not (didn't)</span> + <span class="neon-green font-black">base verb</span><br>
+        <span class="text-purple-300 text-xs">e.g. go → <b>didn't go</b> · eat → <b>didn't eat</b> · see → <b>didn't see</b></span>
+      </div>
+
+      <div class="rounded-2xl border border-purple-800 bg-black/40 p-4 sm:p-6 text-center">
+        <div class="text-4xl mb-3 float">🕯️</div>
+        <p class="text-lg sm:text-2xl font-bold leading-relaxed">${sentence}</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-6">${optionBtns}</div>
+
+      ${!g.answered ? `
+        <div class="text-center mt-6">
+          <button class="btn" ${selIdx !== null ? "" : "disabled"} onclick="castNeg()">Open the Crypt 🗝️</button>
+        </div>` : feedback}
+    </div>`;
+}
+
+function pickNeg(j){
+  const g = state.g4;
+  if (g.answered) return;
+  g.sel = j;
+  renderStage();
+}
+
+function castNeg(){
+  const g = state.g4;
+  if (g.answered || g.sel === null) return;
+  const picked = g.opts[g.i][g.sel];
+  g.answered = true;
+  if (picked.ok) {
+    g.correct++;
+    addScore(15, $("blank4"), "g4");
+  } else {
+    shakeEl("blank4");
+  }
+  renderStage();
+}
+
+function nextNeg(){
+  const g = state.g4;
+  g.i++;
+  g.sel = null;
+  g.answered = false;
+  if (g.i >= NEG_Q.length) { nextLevel(); return; }
+  renderStage();
 }
 
 /* ==========================================================
    END SCREEN
    ========================================================== */
 function getTitle(score){
-  if (score >= 260) return { t: "Master of the Haunted Grammar", e: "👑🎃👻", c: "neon-orange" };
-  if (score >= 170) return { t: "Spooky Grammar Scholar", e: "🦇🧙", c: "neon-purple" };
+  if (score >= 520) return { t: "Master of the Haunted Grammar", e: "👑🎃👻", c: "neon-orange" };
+  if (score >= 330) return { t: "Spooky Grammar Scholar", e: "🦇🧙", c: "neon-purple" };
   return { t: "Apprentice of the Dark Arts", e: "🕯️🪄", c: "neon-green" };
 }
 
@@ -637,6 +755,7 @@ function renderEnd(){
   const pct = Math.min(100, Math.round((state.score / MAX_SCORE) * 100));
   const stars = pct >= 85 ? 3 : pct >= 55 ? 2 : 1;
   const starStr = "⭐".repeat(stars) + "☆".repeat(3 - stars);
+  const p = state.pts;
   return `
     <div class="card p-6 sm:p-10 text-center relative overflow-hidden">
       <div class="text-6xl sm:text-7xl float pumpkin-glow inline-block">🎃</div>
@@ -645,10 +764,11 @@ function renderEnd(){
       <p class="text-2xl mt-2">${title.e}</p>
       <p class="text-lg mt-4">Well done, <span class="neon-orange font-black">${esc(state.user)}</span>!</p>
 
-      <div class="grid grid-cols-3 gap-3 mt-6 max-w-lg mx-auto">
-        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Ghost Match</p><p class="font-black neon-green">${state.g1 ? state.g1.matched.length * 10 + (state.g1.matched.length === PAIRS.length ? 20 : 0) : 0}</p></div>
-        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Witch's Potion</p><p class="font-black neon-purple">${state.g2 ? state.g2.correct * 15 : 0}</p></div>
-        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Haunted Escape</p><p class="font-black neon-orange">${state.g3 ? state.g3.pos * 20 : 0}</p></div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 max-w-2xl mx-auto">
+        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Ghost Match</p><p class="font-black neon-green">${p.g1}</p></div>
+        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Witch's Potion</p><p class="font-black neon-purple">${p.g2}</p></div>
+        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Haunted Escape</p><p class="font-black neon-orange">${p.g3}</p></div>
+        <div class="stat"><p class="text-[10px] uppercase text-purple-300">Crypt of Negatives</p><p class="font-black neon-green">${p.g4}</p></div>
       </div>
 
       <div class="mt-8">
@@ -667,12 +787,14 @@ function renderEnd(){
 
 function playAgain(){
   state.score = 0;
+  state.pts = emptyPts();
   startGame(1);
 }
 
 function leaveHouse(){
-  state.user = ""; state.score = 0; state.level = 0;
-  state.g1 = state.g2 = state.g3 = null;
+  state.user = ""; state.score = 0; state.pts = emptyPts(); state.level = 0;
+  state.g1 = state.g2 = state.g3 = state.g4 = null;
+  $("app").innerHTML = "";
   showEntry();
 }
 
